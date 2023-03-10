@@ -1,0 +1,142 @@
+<odoo>
+    <record model="ir.ui.view" id="students_student_view_form">
+        <field name="name">students.form</field>
+        <field name="model">students.student</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Student">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="number"/>
+                            <field name="training_id"/>
+                            <field name="user_id" />
+                        </group>
+                        <group>
+                            <field name="firstname"/>
+                            <field name="lastname"/>
+                            <field name="country_id"/>
+                        </group>
+                        <group>
+                            <field name="grade_point_average"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Marks" name="marks">
+                            <field name="mark_ids">
+                                <tree editable="bottom">
+                                    <field name="subject"/>
+                                    <field name="mark"/>
+                                    <field name="coeff"/>
+                                    <field name="weighted_mark"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="students_student_view_tree">
+        <field name="name">students.tree</field>
+        <field name="model">students.student</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree string="Students">
+                <field name="firstname"/>
+                <field name="lastname"/>
+                <field name="grade_point_average"/>
+                <field name="training_id"/>
+                <field name="mark_ids"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="students_student_view_search" model="ir.ui.view">
+        <field name="name">students.search</field>
+        <field name="model">students.student</field>
+        <field name="arch" type="xml">
+            <search string="Search Students">
+                <filter name="filter_see_french" string="French students" domain="[('country_id.code', '=', 'FR')]"/>
+                <filter name="filter_see_other" string="Other nationality" domain="[('country_id.code', '!=', 'FR')]"/>
+                <separator />
+                <filter name="filter_no_notes" string="Students without marks" domain="[('mark_ids', '=', False)]"/>
+                <filter name="filter_graduating_students" string="Graduating Students" domain="[('grade_point_average', '&gt;=', 10)]"/>
+                <filter name="filter_non_graduating_students" string="Non-Graduating Students" domain="[('grade_point_average', '&lt;', 10), ('mark_ids', '!=', False)]"/>
+
+            </search>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_students_student_view">
+        <field name="name">Students</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">students.student</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+
+    <record id="students_student_continuous_view_form_2" model="ir.ui.view">
+        <field name="name">students.student.continous.form</field>
+        <field name="model">students.student.continuous</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Student">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="number"/>
+                            <field name="training_id"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="firstname"/>
+                            <field name="lastname"/>
+                            <field name="country_id"/>
+                        </group>
+                        <group>
+                            <field name="grade_point_average"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Marks" name="marks">
+                            <field name="mark_ids">
+                                <tree editable="bottom">
+                                    <field name="subject"/>
+                                    <field name="mark"/>
+                                    <field name="coeff"/>
+                                    <field name="weighted_mark"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="students_student_continuous_view_tree_2" model="ir.ui.view">
+        <field name="name">students.student.continous.tree</field>
+        <field name="model">students.student.continuous</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree string="Students">
+                <field name="firstname"/>
+                <field name="lastname"/>
+                <field name="grade_point_average"/>
+                <field name="training_id"/>
+                <field name="company_id"/>
+                <field name="mark_ids"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_students_student_continuous_view">
+        <field name="name">Continuous Students</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">students.student.continuous</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

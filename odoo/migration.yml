@@ -1,0 +1,38 @@
+migration:
+  versions:
+    - version: setup
+      operations:
+        pre:
+          - odoo -i base --stop-after-init --workers=0 --no-xmlrpc
+          - anthem songs.install.pre::main
+        post:
+          - anthem openerp.addons.cloud_platform.songs::install
+      modes:
+        sample:
+          operations:
+            post:
+              - anthem songs.sample.data_sample::main
+        full:
+          operations:
+            post:
+              - anthem songs.install.data_full::main
+      addons:
+        upgrade:
+          # Kal-It       
+          - kal-it_tools
+
+          # C2C
+          #### camptocamp/cloud-platform
+          - cloud_platform_exoscale
+          
+          # OCA
+          #### oca/server-env
+          - mail_environment
+          - server_environment
+          - server_environment_ir_config_parameter
+
+          #### oca/web
+          - web_environment_ribbon
+
+          # local-src
+          # - addon

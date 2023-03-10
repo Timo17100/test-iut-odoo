@@ -1,0 +1,101 @@
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+
+services:
+  - docker:18.09.7-dind
+
+stages:
+  - build
+  - production
+
+.use_context: &use_context
+  - kubectl config get-contexts
+  - kubectl config use-context "$KUBE_CONTEXT"
+
+.before_script_template: &global_env_variables
+  before_script:
+    - *use_context
+    - sed -i "s~__DEPLOY_CONFIG_DOCKER__~$DEPLOY_CONFIG_DOCKER~" k8s/docker-registry-secret.yaml 
+    - sed -i "s~__CI_REGISTRY_IMAGE__~$CI_REGISTRY_IMAGE~" k8s/deployment.yaml
+    - sed -i "s~__DB_USER__~$DB_USER~" k8s/deployment.yaml
+    - sed -i "s~__DB_PASSWORD__~$DB_PASSWORD~" k8s/deployment.yaml
+    - sed -i "s~__DB_NAME__~$DB_NAME~" k8s/deployment.yaml
+    - sed -i "s~__DB_PORT__~$DB_PORT~" k8s/deployment.yaml
+    - sed -i "s~__DB_HOST__~$DB_HOST~" k8s/deployment.yaml
+    - sed -i "s~__RUNNING_ENV__~$RUNNING_ENV~" k8s/deployment.yaml
+    - sed -i "s~__DEMO__~$DEMO~" k8s/deployment.yaml
+    - sed -i "s~__WORKERS__~$WORKERS~" k8s/deployment.yaml
+    - sed -i "s~__ADMIN_PASSWD__~$ADMIN_PASSWD~" k8s/deployment.yaml
+    - sed -i "s~__ODOO_BASE_URL__~$ODOO_BASE_URL~" k8s/deployment.yaml
+    - sed -i "s~__ODOO_SESSION_REDIS__~$ODOO_SESSION_REDIS~" k8s/deployment.yaml
+    - sed -i "s~__ODOO_SESSION_REDIS_HOST__~$ODOO_SESSION_REDIS_HOST~" k8s/deployment.yaml
+    - sed -i "s~__ODOO_SESSION_REDIS_PASSWORD__~$ODOO_SESSION_REDIS_PASSWORD~" k8s/deployment.yaml
+    - sed -i "s~__ODOO_SESSION_REDIS_EXPIRATION__~$ODOO_SESSION_REDIS_EXPIRATION~" k8s/deployment.yaml
+    - sed -i "s~__ODOO_SESSION_REDIS_PREFIX__~$ODOO_SESSION_REDIS_PREFIX~" k8s/deployment.yaml
+    - sed -i "s~__ODOO_LOGGING_JSON__~$ODOO_LOGGING_JSON~" k8s/deployment.yaml
+    - sed -i "s~__AWS_HOST__~$AWS_HOST~" k8s/deployment.yaml
+    - sed -i "s~__AWS_REGION__~$AWS_REGION~" k8s/deployment.yaml
+    - sed -i "s~__AWS_ACCESS_KEY_ID__~$S3_ACCESS_KEY_ID~" k8s/deployment.yaml # AWS -> S3 because of predefined gitlab env variables
+    - sed -i "s~__AWS_SECRET_ACCESS_KEY__~$S3_SECRET_ACCESS_KEY~" k8s/deployment.yaml
+    - sed -i "s~__AWS_BUCKETNAME__~$AWS_BUCKETNAME~" k8s/deployment.yaml
+    - sed -i "s~__ODOO_CLOUD_PLATFORM_UNSAFE__~$ODOO_CLOUD_PLATFORM_UNSAFE~" k8s/deployment.yaml
+    - sed -i "s~__MARABUNTA_ALLOW_SERIE__~$MARABUNTA_ALLOW_SERIE~" k8s/deployment.yaml
+    - sed -i "s~__MARABUNTA_MODE__~$MARABUNTA_MODE~" k8s/deployment.yaml
+    - sed -i "s~__MARABUNTA_WEB_CUSTOM_HTML__~$MARABUNTA_WEB_CUSTOM_HTML~" k8s/deployment.yaml
+    - sed -i "s~__ELASTIC_APM__~$ELASTIC_APM~" k8s/deployment.yaml
+    - sed -i "s~__ELASTIC_APM_NAME__~$ELASTIC_APM_NAME~" k8s/deployment.yaml
+    - sed -i "s~__ELASTIC_APM_SECRET_TOKEN__~$ELASTIC_APM_SECRET_TOKEN~" k8s/deployment.yaml
+    - sed -i "s~__ELASTIC_APM_SERVER_URL__~$ELASTIC_APM_SERVER_URL~" k8s/deployment.yaml
+    - sed -i "s~__ELASTIC_APM_ENVIRONMENT__~$ELASTIC_APM_ENVIRONMENT~" k8s/deployment.yaml
+    - sed -i "s~__DB_MAXCONN__~$DB_MAXCONN~" k8s/deployment.yaml
+    - sed -i "s~__LIMIT_MEMORY_SOFT__~$LIMIT_MEMORY_SOFT~" k8s/deployment.yaml
+    - sed -i "s~__LIMIT_MEMORY_HARD__~$LIMIT_MEMORY_HARD~" k8s/deployment.yaml
+    - sed -i "s~__LIMIT_REQUEST__~$LIMIT_REQUEST~" k8s/deployment.yaml
+    - sed -i "s~__LIMIT_TIME_CPU__~$LIMIT_TIME_CPU~" k8s/deployment.yaml
+    - sed -i "s~__LIMIT_TIME_REAL__~$LIMIT_TIME_REAL~" k8s/deployment.yaml
+    - sed -i "s~__KWKHTMLTOPDF_SERVER_URL__~$KWKHTMLTOPDF_SERVER_URL~" k8s/deployment.yaml
+    - sed -i "s~__ODOO_REPORT_URL__~$ODOO_BASE_URL~" k8s/deployment.yaml
+    - sed -i "s~__ENV__~$RUNNING_ENV~" k8s/ingress.yaml
+    - sed -i "s~__ENV__~$RUNNING_ENV~" k8s/service.yaml
+    - sed -i "s~__RUNNING_ENV__~$RUNNING_ENV~" k8s/docker-registry-secret.yaml
+build:
+  image:
+    name: docker:latest
+  stage: build
+  before_script:
+    # We can't use GIT_SUBMODULE_STRATEGY since the git submodule will be fetch before cache,
+    # taking quite a long time cloning odoo/src
+    - apk add git
+    - git submodule sync
+    - git submodule update --init --recursive
+  script:
+    - "[[ -z \"${CI_COMMIT_TAG}\" ]] && version=\"${CI_COMMIT_SHORT_SHA}\" || version=\"${CI_COMMIT_TAG}\""
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:$version ./odoo
+    - docker push --all-tags $CI_REGISTRY_IMAGE
+  only:
+    - main
+    - tags
+
+deploy_production:
+  image:
+    name: hacklab/kubectl:latest
+    entrypoint: [""]
+  stage: production
+  <<: *global_env_variables
+  script:
+    - sed -i "s~__VERSION__~$CI_COMMIT_TAG~" k8s/deployment.yaml
+    - sed -i "s~__ODOO_URL__~$ODOO_PRODUCTION_URL~" k8s/ingress.yaml
+    - kubectl apply -f k8s/docker-registry-secret.yaml
+    - kubectl apply -f k8s/deployment.yaml
+    - kubectl apply -f k8s/service.yaml
+    - kubectl apply -f k8s/ingress.yaml
+    - kubectl rollout status -f k8s/deployment.yaml
+  environment:
+    name: production
+    url: $ODOO_PRODUCTION_URL
+  only:
+    - tags
+  when: manual

@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: odoo-iut-__ENV__-ingress-service
+  namespace: k-erp-iut-__ENV__
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "1G"
+spec:
+  tls:
+    - hosts:
+      - __ODOO_URL__
+      secretName: iut-__ENV__
+  rules:
+  - host: __ODOO_URL__
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: odoo-iut-__ENV__
+            port:
+              number: 8069
+      - path: /longpolling/poll
+        pathType: Prefix
+        backend:
+          service:
+            name: odoo-iut-__ENV__
+            port:
+              number: 8072
+      - path: /longpolling/im/poll
+        pathType: Prefix
+        backend:
+          service:
+            name: odoo-iut-__ENV__
+            port:
+              number: 8072

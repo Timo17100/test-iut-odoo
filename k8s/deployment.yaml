@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odoo-deployment-iut-__RUNNING_ENV__
+  namespace: k-erp-iut-__RUNNING_ENV__
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: odoo-iut-__RUNNING_ENV__
+  template:
+    metadata:
+      labels:
+        app: odoo-iut-__RUNNING_ENV__
+    spec:
+      nodeSelector:
+        kerp: "true"
+      imagePullSecrets:
+        - name: registrypullsecret
+      containers:
+        - name: odoo-iut-__RUNNING_ENV__
+          image: __CI_REGISTRY_IMAGE__:__VERSION__
+          args: ["odoo", "--load=web,attachment_s3,session_redis,logging_json_kal-it,elastic_apm", "--unaccent"]
+          ports:
+            - containerPort: 8069
+              name: odoo
+            - containerPort: 8072
+              name: longpolling
+          env:
+            - name: DB_USER
+              value: "__DB_USER__"
+            - name: DB_PASSWORD
+              value: "__DB_PASSWORD__"
+            - name: DB_NAME
+              value: "__DB_NAME__"
+            - name: DB_PORT
+              value: "__DB_PORT__"
+            - name: DB_HOST
+              value: "__DB_HOST__"
+            - name: RUNNING_ENV
+              value: "__RUNNING_ENV__"
+            - name: DEMO
+              value: "__DEMO__"
+            - name: WORKERS
+              value: "__WORKERS__"
+            - name: ADMIN_PASSWD
+              value: "__ADMIN_PASSWD__"
+            - name: ODOO_BASE_URL
+              value: "__ODOO_BASE_URL__"
+            - name: ODOO_SESSION_REDIS
+              value: "__ODOO_SESSION_REDIS__"
+            - name: ODOO_SESSION_REDIS_HOST
+              value: "__ODOO_SESSION_REDIS_HOST__"
+            - name: ODOO_SESSION_REDIS_PASSWORD
+              value: "__ODOO_SESSION_REDIS_PASSWORD__"
+            - name: ODOO_SESSION_REDIS_EXPIRATION
+              value: "__ODOO_SESSION_REDIS_EXPIRATION__"
+            - name: ODOO_SESSION_REDIS_PREFIX
+              value: "__ODOO_SESSION_REDIS_PREFIX__"
+            - name: ODOO_LOGGING_JSON
+              value: "__ODOO_LOGGING_JSON__"
+            - name: AWS_HOST
+              value: "__AWS_HOST__"
+            - name: AWS_REGION
+              value: "__AWS_REGION__"
+            - name: AWS_ACCESS_KEY_ID
+              value: "__AWS_ACCESS_KEY_ID__"
+            - name: AWS_SECRET_ACCESS_KEY
+              value: "__AWS_SECRET_ACCESS_KEY__"
+            - name: AWS_BUCKETNAME
+              value: "__AWS_BUCKETNAME__"
+            - name: ODOO_CLOUD_PLATFORM_UNSAFE
+              value: "__ODOO_CLOUD_PLATFORM_UNSAFE__"
+            - name: MARABUNTA_ALLOW_SERIE
+              value: "__MARABUNTA_ALLOW_SERIE__"
+            - name: MARABUNTA_MODE
+              value: "__MARABUNTA_MODE__"
+            - name: MARABUNTA_WEB_CUSTOM_HTML
+              value: "__MARABUNTA_WEB_CUSTOM_HTML__"
+            - name: ELASTIC_APM
+              value: "__ELASTIC_APM__"
+            - name: ELASTIC_APM_NAME
+              value: "__ELASTIC_APM_NAME__"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "__ELASTIC_APM_SECRET_TOKEN__"
+            - name: ELASTIC_APM_SERVER_URL
+              value: "__ELASTIC_APM_SERVER_URL__"
+            - name: ELASTIC_APM_ENVIRONMENT
+              value: "__ELASTIC_APM_ENVIRONMENT__"
+            - name: DB_MAXCONN
+              value: "__DB_MAXCONN__"
+            - name: LIMIT_MEMORY_SOFT
+              value: "__LIMIT_MEMORY_SOFT__"
+            - name: LIMIT_MEMORY_HARD
+              value: "__LIMIT_MEMORY_HARD__"
+            - name: LIMIT_REQUEST
+              value: "__LIMIT_REQUEST__"
+            - name: LIMIT_TIME_CPU
+              value: "__LIMIT_TIME_CPU__"
+            - name: LIMIT_TIME_REAL
+              value: "__LIMIT_TIME_REAL__"
+            - name: KWKHTMLTOPDF_SERVER_URL
+              value: "__KWKHTMLTOPDF_SERVER_URL__"
+            - name: ODOO_REPORT_URL
+              value: "__ODOO_REPORT_URL__"

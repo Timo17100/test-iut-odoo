@@ -1,0 +1,11 @@
+<odoo>
+    <menuitem id="students_menu" name="Students"/>
+    <menuitem id="students_training_menu" name="Trainings" parent="students_menu"
+              action="action_students_training_view" sequence="10"/>
+    <menuitem id="students_submenu" name="Students" sequence="20" parent="students.students_menu"/>
+    <menuitem id="students_student_menu" name="Students" parent="students_submenu"
+              action="action_students_student_view"/>
+    <menuitem id="students_student_continuous_menu" name="Continuous Students" parent="students_submenu"
+              action="action_students_student_continuous_view"/>
+    <menuitem id="students_mark_menu" name="Marks" sequence="30" parent="students_menu" action="action_students_mark_view"/>
+</odoo>

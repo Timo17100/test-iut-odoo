@@ -1,0 +1,7 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+"access_students_mark_students","Access to StudentsMark by students","model_students_mark","group_students",1,0,0,0
+"access_students_student_students","Access to StudentsStudent by students","model_students_student","group_students",1,1,0,0
+"access_students_continuousstudent_students","Access to StudentsContinuousStudent by students","model_students_student_continuous","group_students",1,1,0,0
+"access_students_mark_teachers","Access to StudentsMark by teachers","model_students_mark","group_teachers",1,1,1,1
+"access_students_student_teachers","Access to StudentsStudent by teachers","model_students_student","group_teachers",1,1,1,1
+"access_students_continuousstudent_teachers","Access to StudentsContinuousStudent by teachers","model_students_student_continuous","group_teachers",1,1,1,1
